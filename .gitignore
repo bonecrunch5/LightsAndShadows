@@ -66,6 +66,3 @@ UserSettings/
 
 # Not yet sure what this is, but doesn't look important for source control
 QCAR/
-
-# Do not push Vuforia package
-Packages/com.ptc.vuforia.engine-10.3.2.tgz
