@@ -46,7 +46,17 @@ public class ShadowDetection : MonoBehaviour
 
                 Vector3 direction = spotlight.transform.position - sectorCenter;
 
-                Debug.DrawRay(sectorCenter, direction, Color.red);
+                float angle = Vector3.Angle(spotlight.transform.forward, -direction);
+
+                if (angle <= spotlight.spotAngle / 2)
+                {
+                    bool hit = Physics.Raycast(sectorCenter, direction, direction.magnitude, LayerMask.GetMask("Default"));
+
+                    if (hit)
+                        Debug.DrawRay(sectorCenter, direction, Color.red);
+                }
+                else
+                    Debug.DrawRay(sectorCenter, direction, Color.red);
             }
         }
 
