@@ -4,28 +4,67 @@ using UnityEngine;
 
 public class ShadowDetection : MonoBehaviour
 {
-    public Transform wallObj;
+    public Light spotlight;
 
-    // Update is called once per frame
+    private MeshFilter meshFilter;
+
+    public float numHorizSectors = 10;
+    public float numVertSectors = 10;
+
+    public Color debugColor = Color.green;
+
+    void Start()
+    {
+        meshFilter = GetComponent<MeshFilter>();
+    }
+
     void Update()
     {
-        Ray ray = new Ray(transform.position, Vector3.forward * 10);
+        Bounds bounds = meshFilter.mesh.bounds;
 
-        Debug.DrawRay(transform.position, Vector3.forward * 10, Color.red, 10.0f);
+        Vector3 planeCenter = bounds.center;
+        Vector3 planeExtents = bounds.extents;
 
-        float enter = 0.0f;
+        Vector3 planeTopRight = new Vector3(planeCenter.x - planeExtents.x, planeCenter.y, planeCenter.z - planeExtents.z);  // Top right corner
+        Vector3 planeTopLeft = new Vector3(planeCenter.x + planeExtents.x, planeCenter.y, planeCenter.z - planeExtents.z);  // Top left corner
+        Vector3 planeBottomRight = new Vector3(planeCenter.x - planeExtents.x, planeCenter.y, planeCenter.z + planeExtents.z);  // Bottom right corner
+        Vector3 planeBottomLeft = new Vector3(planeCenter.x + planeExtents.x, planeCenter.y, planeCenter.z + planeExtents.z);  // Bottom left corner
 
-        Plane wall = new Plane(new Vector3(-1, 0, 2), new Vector3(-1, 1, 2), new Vector3(1, 1, 2));
+        planeTopRight = transform.TransformPoint(planeTopRight);
+        planeTopLeft = transform.TransformPoint(planeTopLeft);
+        planeBottomRight = transform.TransformPoint(planeBottomRight);
+        planeBottomLeft = transform.TransformPoint(planeBottomLeft);
 
-        if (wall.Raycast(ray, out enter))
+        for (int i = 1; i <= numVertSectors; i++)
         {
-            Vector3 hitPoint = ray.GetPoint(enter);
-            Debug.Log("hit");
-            Debug.Log(hitPoint.ToString());
+            Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, (i - 0.5f) / numVertSectors);
+            Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, (i - 0.5f) / numVertSectors);
 
-            Vector3 hitPointRel = wallObj.InverseTransformPoint(hitPoint);
-            Debug.Log(hitPointRel);
+            for (int j = 1; j <= numHorizSectors; j++)
+            {
+                Vector3 sectorCenter = Vector3.Lerp(leftPoint, rightPoint, (j - 0.5f) / numHorizSectors);
+
+                Vector3 direction = spotlight.transform.position - sectorCenter;
+
+                Debug.DrawRay(sectorCenter, direction, Color.red);
+            }
         }
 
+        // DEBUG: draw plane bounding box
+        for (int i = 0; i <= numVertSectors; i++)
+        {
+            Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, i / numVertSectors);
+            Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, i / numVertSectors);
+
+            Debug.DrawLine(leftPoint, rightPoint, debugColor);
+        }
+
+        for (int i = 0; i <= numHorizSectors; i++)
+        {
+            Vector3 topPoint = Vector3.Lerp(planeTopLeft, planeTopRight, i / numHorizSectors);
+            Vector3 bottomPoint = Vector3.Lerp(planeBottomLeft, planeBottomRight, i / numHorizSectors);
+
+            Debug.DrawLine(topPoint, bottomPoint, debugColor);
+        }
     }
 }
