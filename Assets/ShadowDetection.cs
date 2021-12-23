@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class ShadowDetection : MonoBehaviour
 {
+    public Texture2D shadowMap;
+
     public Light spotlight;
 
     private MeshFilter meshFilter;
 
-    public float numHorizSectors = 10;
-    public float numVertSectors = 10;
+    public int numHorizSectors = 10;
+    public int numVertSectors = 10;
 
+    public bool debugSectors = false;
+    public bool debugShadows = false;
+    public bool debugTextureShadows = false;
     public Color debugColor = Color.green;
 
     void Start()
@@ -35,6 +40,11 @@ public class ShadowDetection : MonoBehaviour
         planeBottomRight = transform.TransformPoint(planeBottomRight);
         planeBottomLeft = transform.TransformPoint(planeBottomLeft);
 
+        int widthJump = Mathf.FloorToInt(shadowMap.width / numHorizSectors);
+        int heightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
+
+        int numCorrectSectors = 0;
+
         for (int i = 1; i <= numVertSectors; i++)
         {
             Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, (i - 0.5f) / numVertSectors);
@@ -48,33 +58,67 @@ public class ShadowDetection : MonoBehaviour
 
                 float angle = Vector3.Angle(spotlight.transform.forward, -direction);
 
+                bool isShadow = true;
+
                 if (angle <= spotlight.spotAngle / 2)
                 {
                     bool hit = Physics.Raycast(sectorCenter, direction, direction.magnitude, LayerMask.GetMask("Default"));
 
                     if (hit)
-                        Debug.DrawRay(sectorCenter, direction, Color.red);
+                    {
+                        if (debugShadows)
+                            Debug.DrawRay(sectorCenter, direction, Color.red);
+                    }
+                    else
+                        isShadow = false;
                 }
-                else
+                else if (debugShadows)
                     Debug.DrawRay(sectorCenter, direction, Color.red);
+
+                Color[] shadowMapPixels = shadowMap.GetPixels(j * widthJump, (numVertSectors - i) * heightJump, widthJump, heightJump, 0);
+
+                int numShadowPixels = 0;
+                int numLightPixels = 0;
+
+                foreach (Color pixel in shadowMapPixels)
+                {
+                    if (pixel.r == 1f && pixel.g == 1f && pixel.b == 1f)
+                        numLightPixels++;
+                    else
+                        numShadowPixels++;
+                }
+
+                bool shouldBeShadow = numLightPixels <= numShadowPixels;
+
+                if (shouldBeShadow && debugTextureShadows)
+                    Debug.DrawRay(sectorCenter, direction, Color.blue);
+
+                if (shouldBeShadow == isShadow)
+                    numCorrectSectors++;
             }
         }
+
+        float correctPercentage = ((float)numCorrectSectors / (float)(numHorizSectors * numVertSectors)) * 100;
+
+        Debug.Log(correctPercentage + "%");
 
         // DEBUG: draw plane bounding box
         for (int i = 0; i <= numVertSectors; i++)
         {
-            Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, i / numVertSectors);
-            Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, i / numVertSectors);
+            Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, i / (float) numVertSectors);
+            Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, i / (float) numVertSectors);
 
-            Debug.DrawLine(leftPoint, rightPoint, debugColor);
+            if (debugSectors)
+                Debug.DrawLine(leftPoint, rightPoint, debugColor);
         }
 
         for (int i = 0; i <= numHorizSectors; i++)
         {
-            Vector3 topPoint = Vector3.Lerp(planeTopLeft, planeTopRight, i / numHorizSectors);
-            Vector3 bottomPoint = Vector3.Lerp(planeBottomLeft, planeBottomRight, i / numHorizSectors);
+            Vector3 topPoint = Vector3.Lerp(planeTopLeft, planeTopRight, i / (float) numHorizSectors);
+            Vector3 bottomPoint = Vector3.Lerp(planeBottomLeft, planeBottomRight, i / (float) numHorizSectors);
 
-            Debug.DrawLine(topPoint, bottomPoint, debugColor);
+            if (debugSectors)
+                Debug.DrawLine(topPoint, bottomPoint, debugColor);
         }
     }
 }
