@@ -16,6 +16,7 @@ public class ShadowDetection : MonoBehaviour
     public bool debugSectors = false;
     public bool debugShadows = false;
     public bool debugTextureShadows = false;
+    public bool debugTextureWhatever = false;
     public Color debugColor = Color.green;
 
     void Start()
@@ -44,6 +45,7 @@ public class ShadowDetection : MonoBehaviour
         int heightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
 
         int numCorrectSectors = 0;
+        int numWrongSectors = 0;
 
         for (int i = 1; i <= numVertSectors; i++)
         {
@@ -79,34 +81,48 @@ public class ShadowDetection : MonoBehaviour
 
                 int numShadowPixels = 0;
                 int numLightPixels = 0;
+                int numWhateverPixels = 0;
 
                 foreach (Color pixel in shadowMapPixels)
                 {
                     if (pixel.r == 1f && pixel.g == 1f && pixel.b == 1f)
                         numLightPixels++;
-                    else
+                    else if (pixel.r == 0f && pixel.g == 0f && pixel.b == 0f)
                         numShadowPixels++;
+                    else
+                        numWhateverPixels++;
                 }
 
-                bool shouldBeShadow = numLightPixels <= numShadowPixels;
+                // If numWhateverPixels is higher, then it doesn't matter if is shadow or light
+                if (numWhateverPixels > numLightPixels && numWhateverPixels > numShadowPixels)
+                {
+                    if(debugTextureWhatever)
+                        Debug.DrawRay(sectorCenter, direction, Color.yellow);
+                }
+                else
+                {
+                    bool shouldBeShadow = numLightPixels <= numShadowPixels;
 
-                if (shouldBeShadow && debugTextureShadows)
-                    Debug.DrawRay(sectorCenter, direction, Color.blue);
+                    if (shouldBeShadow && debugTextureShadows)
+                        Debug.DrawRay(sectorCenter, direction, Color.blue);
 
-                if (shouldBeShadow == isShadow)
-                    numCorrectSectors++;
+                    if (shouldBeShadow == isShadow)
+                        numCorrectSectors++;
+                    else
+                        numWrongSectors++;
+                }
             }
         }
 
-        float correctPercentage = ((float)numCorrectSectors / (float)(numHorizSectors * numVertSectors)) * 100;
+        float correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
 
         Debug.Log(correctPercentage + "%");
 
         // DEBUG: draw plane bounding box
         for (int i = 0; i <= numVertSectors; i++)
         {
-            Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, i / (float) numVertSectors);
-            Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, i / (float) numVertSectors);
+            Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, i / (float)numVertSectors);
+            Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, i / (float)numVertSectors);
 
             if (debugSectors)
                 Debug.DrawLine(leftPoint, rightPoint, debugColor);
@@ -114,8 +130,8 @@ public class ShadowDetection : MonoBehaviour
 
         for (int i = 0; i <= numHorizSectors; i++)
         {
-            Vector3 topPoint = Vector3.Lerp(planeTopLeft, planeTopRight, i / (float) numHorizSectors);
-            Vector3 bottomPoint = Vector3.Lerp(planeBottomLeft, planeBottomRight, i / (float) numHorizSectors);
+            Vector3 topPoint = Vector3.Lerp(planeTopLeft, planeTopRight, i / (float)numHorizSectors);
+            Vector3 bottomPoint = Vector3.Lerp(planeBottomLeft, planeBottomRight, i / (float)numHorizSectors);
 
             if (debugSectors)
                 Debug.DrawLine(topPoint, bottomPoint, debugColor);
