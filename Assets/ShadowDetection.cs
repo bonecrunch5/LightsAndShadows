@@ -61,6 +61,7 @@ public class ShadowDetection : MonoBehaviour
                 float angle = Vector3.Angle(spotlight.transform.forward, -direction);
 
                 bool isShadow = true;
+                bool isInsideLightCone = true;
 
                 if (angle <= spotlight.spotAngle / 2)
                 {
@@ -74,8 +75,12 @@ public class ShadowDetection : MonoBehaviour
                     else
                         isShadow = false;
                 }
-                else if (debugShadows)
-                    Debug.DrawRay(sectorCenter, direction, Color.red);
+                else
+                {
+                    isInsideLightCone = false;
+                    if (debugShadows)
+                        Debug.DrawRay(sectorCenter, direction, Color.red);
+                }
 
                 Color[] shadowMapPixels = shadowMap.GetPixels(j * widthJump, (numVertSectors - i) * heightJump, widthJump, heightJump, 0);
 
@@ -106,10 +111,18 @@ public class ShadowDetection : MonoBehaviour
                     if (shouldBeShadow && debugTextureShadows)
                         Debug.DrawRay(sectorCenter, direction, Color.blue);
 
-                    if (shouldBeShadow == isShadow)
+                    if (isInsideLightCone && shouldBeShadow == isShadow)
+                    {
                         numCorrectSectors++;
+
+                        if (shouldBeShadow) numCorrectSectors += 4;
+                    }
                     else
+                    {
                         numWrongSectors++;
+
+                        if (shouldBeShadow) numWrongSectors += 4;
+                    }
                 }
             }
         }
