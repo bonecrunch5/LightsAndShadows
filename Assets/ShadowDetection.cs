@@ -82,7 +82,7 @@ public class ShadowDetection : MonoBehaviour
                         Debug.DrawRay(sectorCenter, direction, Color.red);
                 }
 
-                Color[] shadowMapPixels = shadowMap.GetPixels(j * widthJump, (numVertSectors - i) * heightJump, widthJump, heightJump, 0);
+                Color[] shadowMapPixels = shadowMap.GetPixels((j-1) * widthJump, (numVertSectors - i) * heightJump, widthJump, heightJump, 0);
 
                 int numShadowPixels = 0;
                 int numLightPixels = 0;
