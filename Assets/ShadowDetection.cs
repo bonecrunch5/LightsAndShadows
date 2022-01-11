@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class ShadowDetection : MonoBehaviour
 {
     public Texture2D shadowMap;
 
     public Light spotlight;
+
+    public TextMeshProUGUI percentageText;
 
     private MeshFilter meshFilter;
 
@@ -147,6 +150,11 @@ public class ShadowDetection : MonoBehaviour
             float correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
 
             Debug.Log(correctPercentage + "%");
+            if (correctPercentage > 95)
+               percentageText.text = correctPercentage.ToString("F2") + "%";
+            else percentageText.text = correctPercentage.ToString("F0") + "%";
+            //percentageText.text = Mathf.Round(correctPercentage * 100f) / 100f + "%";
+
 
             currentSector = 0;
         }

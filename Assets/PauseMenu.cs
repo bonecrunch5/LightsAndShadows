@@ -5,13 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
-    public void Pause()
-    {
-
-    }
-
     public void Back()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene("LevelSelector");
     }
 }
