@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Diagnostics;
 using TMPro;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class ShadowDetection : MonoBehaviour
 {
@@ -11,6 +13,7 @@ public class ShadowDetection : MonoBehaviour
     public Light spotlight;
 
     public TextMeshProUGUI percentageText;
+    public Button nextLevelButton;
 
     private MeshFilter meshFilter;
 
@@ -31,6 +34,18 @@ public class ShadowDetection : MonoBehaviour
     public bool debugTextureShadows = false;
     public bool debugTextureWhatever = false;
     public Color debugColor = Color.green;
+
+    private bool paused = false;
+    private int nLevels = 4;
+    private Image star1;
+    private Image star2;
+    private Image star3;
+    private int oneStarThreshold = 80;
+    private int twoStarThreshold = 90;
+    private int threeStarThreshold = 95;
+    public float authorThreshold = 100;
+    private Color defaultColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+    private Color authorColor = new Color(1.0f, 0.5f, 0.0f, 1.0f);
 
     void OnEnable()
     {
@@ -61,6 +76,16 @@ public class ShadowDetection : MonoBehaviour
 
         shadowWidthJump = Mathf.FloorToInt(shadowMap.width / numHorizSectors);
         shadowHeightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
+
+        nextLevelButton.onClick.AddListener(HandleNextLevel);
+        Image[] allChildren = nextLevelButton.GetComponentsInChildren<Image>();
+
+        foreach (Image child in allChildren)
+        {
+            if (child.gameObject.name == "Star1") star1 = child;
+            if (child.gameObject.name == "Star2") star2 = child;
+            if (child.gameObject.name == "Star3") star3 = child;
+        }
     }
 
     void Update()
@@ -197,10 +222,22 @@ public class ShadowDetection : MonoBehaviour
         {
             float correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
 
-            if (correctPercentage > 95)
-                percentageText.text = correctPercentage.ToString("F2") + "%";
-            else
-                percentageText.text = correctPercentage.ToString("F0") + "%";
+            if (!paused)
+            {
+                if (correctPercentage >= 95)
+                    percentageText.text = correctPercentage.ToString("F2") + "%";
+                else
+                    percentageText.text = correctPercentage.ToString("F0") + "%";
+
+                nextLevelButton.gameObject.SetActive((correctPercentage >= oneStarThreshold));
+                star1.gameObject.SetActive((correctPercentage >= oneStarThreshold));
+                star2.gameObject.SetActive((correctPercentage >= twoStarThreshold));
+                star3.gameObject.SetActive((correctPercentage >= threeStarThreshold));
+
+                star1.color = (correctPercentage >= authorThreshold) ? authorColor : defaultColor;
+                star2.color = (correctPercentage >= authorThreshold) ? authorColor : defaultColor;
+                star3.color = (correctPercentage >= authorThreshold) ? authorColor : defaultColor;
+            }           
 
             currentSector = 0;
         }
@@ -225,5 +262,23 @@ public class ShadowDetection : MonoBehaviour
                 Debug.DrawLine(topPoint, bottomPoint, debugColor);
         }
 #endif
+    }
+
+    public void Pause()
+    {
+        paused = !paused;
+    }
+
+    private void HandleNextLevel()
+    {
+        int nextLevel = PlayerPrefs.GetInt("Level", 0) + 1;
+         
+        if (nextLevel > nLevels)
+            SceneManager.LoadScene("MainMenu");
+        else
+        {
+            PlayerPrefs.SetInt("Level", nextLevel);
+            SceneManager.LoadScene("Level" + nextLevel);
+        }
     }
 }

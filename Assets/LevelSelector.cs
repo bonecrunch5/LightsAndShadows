@@ -7,6 +7,7 @@ public class LevelSelector : MonoBehaviour
 {
     public void PlayLevel(int level)
     {
+        PlayerPrefs.SetInt("Level", level);
         SceneManager.LoadScene("Level" + level);
     }
 
