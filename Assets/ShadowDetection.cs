@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 using TMPro;
 
 public class ShadowDetection : MonoBehaviour
@@ -19,8 +20,11 @@ public class ShadowDetection : MonoBehaviour
     private int currentSector = 0;
     public int sectorsPerFrame = 10;
 
-    public int numHorizSectors = 10;
-    public int numVertSectors = 10;
+    public int numHorizSectors = 64;
+    public int numVertSectors = 32;
+
+    private int shadowWidthJump;
+    private int shadowHeightJump;
 
     public bool debugSectors = false;
     public bool debugShadows = false;
@@ -31,10 +35,39 @@ public class ShadowDetection : MonoBehaviour
     void Start()
     {
         meshFilter = GetComponent<MeshFilter>();
+
+        if ((numHorizSectors == 0) || (numHorizSectors & (numHorizSectors - 1)) != 0)
+        {
+#if UNITY_EDITOR
+            Debug.LogError("Invalid numHorizSectors; must be power of 2 (" + numHorizSectors + " is not power of 2)");
+#else
+            Utils.ForceCrash(ForcedCrashCategory.Abort);
+#endif
+        }
+
+        if ((numVertSectors == 0) || (numVertSectors & (numVertSectors - 1)) != 0)
+        {
+#if UNITY_EDITOR
+            Debug.LogError("Invalid numVertSectors; must be power of 2 (" + numVertSectors + " is not power of 2)");
+#else
+            Utils.ForceCrash(ForcedCrashCategory.Abort);
+#endif
+        }
+
+        shadowWidthJump = Mathf.FloorToInt(shadowMap.width / numHorizSectors);
+        shadowHeightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
     }
 
     void Update()
     {
+#if UNITY_EDITOR
+        if ((numHorizSectors == 0) || (numHorizSectors & (numHorizSectors - 1)) != 0)
+            Debug.LogError("Invalid numHorizSectors; must be power of 2 (" + numHorizSectors + " is not power of 2)");
+
+        if ((numVertSectors == 0) || (numVertSectors & (numVertSectors - 1)) != 0)
+            Debug.LogError("Invalid numVertSectors; must be power of 2 (" + numVertSectors + " is not power of 2)");
+#endif
+
         int numSectorsInFrame = 0;
 
         Bounds bounds = meshFilter.mesh.bounds;
@@ -52,8 +85,10 @@ public class ShadowDetection : MonoBehaviour
         planeBottomRight = transform.TransformPoint(planeBottomRight);
         planeBottomLeft = transform.TransformPoint(planeBottomLeft);
 
-        int widthJump = Mathf.FloorToInt(shadowMap.width / numHorizSectors);
-        int heightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
+#if UNITY_EDITOR
+        shadowWidthJump = Mathf.FloorToInt(shadowMap.width / numHorizSectors);
+        shadowHeightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
+#endif
 
         if (currentSector == 0)
         {
@@ -85,8 +120,10 @@ public class ShadowDetection : MonoBehaviour
 
                 if (hit)
                 {
+#if UNITY_EDITOR
                     if (debugShadows)
                         Debug.DrawRay(sectorCenter, direction, Color.red, Time.deltaTime + 0.1f);
+#endif
                 }
                 else
                     isShadow = false;
@@ -94,11 +131,13 @@ public class ShadowDetection : MonoBehaviour
             else
             {
                 isInsideLightCone = false;
+#if UNITY_EDITOR
                 if (debugShadows)
                     Debug.DrawRay(sectorCenter, direction, Color.red, Time.deltaTime + 0.1f);
+#endif
             }
 
-            Color[] shadowMapPixels = shadowMap.GetPixels(indexHoriz * widthJump, (numVertSectors - indexVert - 1) * heightJump, widthJump, heightJump, 0);
+            Color[] shadowMapPixels = shadowMap.GetPixels(indexHoriz * shadowWidthJump, (numVertSectors - indexVert - 1) * shadowHeightJump, shadowWidthJump, shadowHeightJump, 0);
 
             int numShadowPixels = 0;
             int numLightPixels = 0;
@@ -117,15 +156,19 @@ public class ShadowDetection : MonoBehaviour
             // If numWhateverPixels is higher, then it doesn't matter if is shadow or light
             if (numWhateverPixels > numLightPixels && numWhateverPixels > numShadowPixels)
             {
+#if UNITY_EDITOR
                 if (debugTextureWhatever)
                     Debug.DrawRay(sectorCenter, direction, Color.yellow, Time.deltaTime + 0.1f);
+#endif
             }
             else
             {
                 bool shouldBeShadow = numLightPixels <= numShadowPixels;
 
+#if UNITY_EDITOR
                 if (shouldBeShadow && debugTextureShadows)
                     Debug.DrawRay(sectorCenter, direction, Color.blue, Time.deltaTime + 0.1f);
+#endif
 
                 if (isInsideLightCone && shouldBeShadow == isShadow)
                 {
@@ -149,17 +192,16 @@ public class ShadowDetection : MonoBehaviour
         {
             float correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
 
-            Debug.Log(correctPercentage + "%");
             if (correctPercentage > 95)
-               percentageText.text = correctPercentage.ToString("F2") + "%";
-            else percentageText.text = correctPercentage.ToString("F0") + "%";
-            //percentageText.text = Mathf.Round(correctPercentage * 100f) / 100f + "%";
-
+                percentageText.text = correctPercentage.ToString("F2") + "%";
+            else
+                percentageText.text = correctPercentage.ToString("F0") + "%";
 
             currentSector = 0;
         }
 
         // DEBUG: draw plane bounding box
+#if UNITY_EDITOR
         for (int i = 0; i <= numVertSectors; i++)
         {
             Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, i / (float)numVertSectors);
@@ -177,5 +219,6 @@ public class ShadowDetection : MonoBehaviour
             if (debugSectors)
                 Debug.DrawLine(topPoint, bottomPoint, debugColor);
         }
+#endif
     }
 }
