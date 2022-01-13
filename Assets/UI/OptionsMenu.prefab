@@ -180,7 +180,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -40}
-  m_SizeDelta: {x: 700, y: 80}
+  m_SizeDelta: {x: 900, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1486990170503855073
 CanvasRenderer:
@@ -210,7 +210,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u2022 Shadow Precision \u2022"
+  m_text: "\u2022 Shadow Verification Rate \u2022"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1257,6 +1257,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   leftHandedToggle: {fileID: 1486990171230253990}
+  SVRLow: {fileID: 1486990171045964542}
+  SVRMedium: {fileID: 1486990172476492064}
+  SVRHigh: {fileID: 1486990172223038042}
 --- !u!1 &1486990171646017188
 GameObject:
   m_ObjectHideFlags: 0
@@ -2353,7 +2356,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1486990172579440160}
   m_Layer: 5
-  m_Name: ShadowPrecision
+  m_Name: ShadowVerificationRate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

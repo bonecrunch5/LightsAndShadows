@@ -32,6 +32,11 @@ public class ShadowDetection : MonoBehaviour
     public bool debugTextureWhatever = false;
     public Color debugColor = Color.green;
 
+    void OnEnable()
+    {
+        sectorsPerFrame = PlayerPrefs.GetInt("sectorsPerFrame", 100);
+    }
+
     void Start()
     {
         meshFilter = GetComponent<MeshFilter>();
