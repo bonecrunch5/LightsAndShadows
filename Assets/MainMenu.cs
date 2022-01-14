@@ -14,4 +14,9 @@ public class MainMenu : MonoBehaviour
     {
         Application.Quit();
     }
+
+    public void DownloadMarkers()
+    {
+        Application.OpenURL("https://drive.google.com/u/0/uc?id=15m1sxEOkyHWmFKft9vi6fAcXZ7Gg7u9E&export=download");
+    }
 }
