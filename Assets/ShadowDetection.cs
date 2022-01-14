@@ -11,6 +11,7 @@ public class ShadowDetection : MonoBehaviour
     public Texture2D shadowMap;
 
     public Light spotlight;
+    private float defaultIntensity;
 
     public TextMeshProUGUI percentageText;
     public Button nextLevelButton;
@@ -56,6 +57,8 @@ public class ShadowDetection : MonoBehaviour
     void Start()
     {
         meshFilter = GetComponent<MeshFilter>();
+
+        defaultIntensity = spotlight.intensity;
 
         if ((numHorizSectors == 0) || (numHorizSectors & (numHorizSectors - 1)) != 0)
         {
@@ -121,102 +124,113 @@ public class ShadowDetection : MonoBehaviour
         shadowHeightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
 #endif
 
-        if (currentSector == 0)
+        if (spotlight.intensity < defaultIntensity)
         {
+            // If spotlight is turning off, trigger end of verification immediately
+            // And trigger percentage of value 0
+            currentSector = numHorizSectors * numVertSectors;
+            numWrongSectors = 1;
             numCorrectSectors = 0;
-            numWrongSectors = 0;
         }
-
-        while (numSectorsInFrame < sectorsPerFrame && currentSector < numHorizSectors * numVertSectors)
+        else
         {
-            int indexVert = currentSector / numHorizSectors;
-
-            Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, (indexVert + 0.5f) / numVertSectors);
-            Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, (indexVert + 0.5f) / numVertSectors);
-
-            int indexHoriz = currentSector % numHorizSectors;
-
-            Vector3 sectorCenter = Vector3.Lerp(leftPoint, rightPoint, (indexHoriz + 0.5f) / numHorizSectors);
-
-            Vector3 direction = spotlight.transform.position - sectorCenter;
-
-            float angle = Vector3.Angle(spotlight.transform.forward, -direction);
-
-            bool isShadow = true;
-            bool isInsideLightCone = true;
-
-            if (angle <= spotlight.spotAngle / 2)
+            if (currentSector == 0)
             {
-                bool hit = Physics.Raycast(sectorCenter, direction, direction.magnitude, LayerMask.GetMask("Default"));
+                numCorrectSectors = 0;
+                numWrongSectors = 0;
+            }
 
-                if (hit)
+            while (numSectorsInFrame < sectorsPerFrame && currentSector < numHorizSectors * numVertSectors)
+            {
+                int indexVert = currentSector / numHorizSectors;
+
+                Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, (indexVert + 0.5f) / numVertSectors);
+                Vector3 rightPoint = Vector3.Lerp(planeTopRight, planeBottomRight, (indexVert + 0.5f) / numVertSectors);
+
+                int indexHoriz = currentSector % numHorizSectors;
+
+                Vector3 sectorCenter = Vector3.Lerp(leftPoint, rightPoint, (indexHoriz + 0.5f) / numHorizSectors);
+
+                Vector3 direction = spotlight.transform.position - sectorCenter;
+
+                float angle = Vector3.Angle(spotlight.transform.forward, -direction);
+
+                bool isShadow = true;
+                bool isInsideLightCone = true;
+
+                if (angle <= spotlight.spotAngle / 2)
                 {
+                    bool hit = Physics.Raycast(sectorCenter, direction, direction.magnitude, LayerMask.GetMask("Default"));
+
+                    if (hit)
+                    {
+#if UNITY_EDITOR
+                        if (debugShadows)
+                            Debug.DrawRay(sectorCenter, direction, Color.red, Time.deltaTime + 0.1f);
+#endif
+                    }
+                    else
+                        isShadow = false;
+                }
+                else
+                {
+                    isInsideLightCone = false;
 #if UNITY_EDITOR
                     if (debugShadows)
                         Debug.DrawRay(sectorCenter, direction, Color.red, Time.deltaTime + 0.1f);
 #endif
                 }
-                else
-                    isShadow = false;
-            }
-            else
-            {
-                isInsideLightCone = false;
-#if UNITY_EDITOR
-                if (debugShadows)
-                    Debug.DrawRay(sectorCenter, direction, Color.red, Time.deltaTime + 0.1f);
-#endif
-            }
 
-            Color[] shadowMapPixels = shadowMap.GetPixels(indexHoriz * shadowWidthJump, (numVertSectors - indexVert - 1) * shadowHeightJump, shadowWidthJump, shadowHeightJump, 0);
+                Color[] shadowMapPixels = shadowMap.GetPixels(indexHoriz * shadowWidthJump, (numVertSectors - indexVert - 1) * shadowHeightJump, shadowWidthJump, shadowHeightJump, 0);
 
-            int numShadowPixels = 0;
-            int numLightPixels = 0;
-            int numWhateverPixels = 0;
+                int numShadowPixels = 0;
+                int numLightPixels = 0;
+                int numWhateverPixels = 0;
 
-            foreach (Color pixel in shadowMapPixels)
-            {
-                if (pixel.r == 1f && pixel.g == 1f && pixel.b == 1f)
-                    numLightPixels++;
-                else if (pixel.r == 0f && pixel.g == 0f && pixel.b == 0f)
-                    numShadowPixels++;
-                else
-                    numWhateverPixels++;
-            }
-
-            // If numWhateverPixels is higher, then it doesn't matter if is shadow or light
-            if (numWhateverPixels > numLightPixels && numWhateverPixels > numShadowPixels)
-            {
-#if UNITY_EDITOR
-                if (debugTextureWhatever)
-                    Debug.DrawRay(sectorCenter, direction, Color.yellow, Time.deltaTime + 0.1f);
-#endif
-            }
-            else
-            {
-                bool shouldBeShadow = numLightPixels <= numShadowPixels;
-
-#if UNITY_EDITOR
-                if (shouldBeShadow && debugTextureShadows)
-                    Debug.DrawRay(sectorCenter, direction, Color.blue, Time.deltaTime + 0.1f);
-#endif
-
-                if (isInsideLightCone && shouldBeShadow == isShadow)
+                foreach (Color pixel in shadowMapPixels)
                 {
-                    numCorrectSectors++;
+                    if (pixel.r == 1f && pixel.g == 1f && pixel.b == 1f)
+                        numLightPixels++;
+                    else if (pixel.r == 0f && pixel.g == 0f && pixel.b == 0f)
+                        numShadowPixels++;
+                    else
+                        numWhateverPixels++;
+                }
 
-                    if (shouldBeShadow) numCorrectSectors += 4;
+                // If numWhateverPixels is higher, then it doesn't matter if is shadow or light
+                if (numWhateverPixels > numLightPixels && numWhateverPixels > numShadowPixels)
+                {
+#if UNITY_EDITOR
+                    if (debugTextureWhatever)
+                        Debug.DrawRay(sectorCenter, direction, Color.yellow, Time.deltaTime + 0.1f);
+#endif
                 }
                 else
                 {
-                    numWrongSectors++;
+                    bool shouldBeShadow = numLightPixels <= numShadowPixels;
 
-                    if (shouldBeShadow) numWrongSectors += 4;
+#if UNITY_EDITOR
+                    if (shouldBeShadow && debugTextureShadows)
+                        Debug.DrawRay(sectorCenter, direction, Color.blue, Time.deltaTime + 0.1f);
+#endif
+
+                    if (isInsideLightCone && shouldBeShadow == isShadow)
+                    {
+                        numCorrectSectors++;
+
+                        if (shouldBeShadow) numCorrectSectors += 4;
+                    }
+                    else
+                    {
+                        numWrongSectors++;
+
+                        if (shouldBeShadow) numWrongSectors += 4;
+                    }
                 }
-            }
 
-            numSectorsInFrame++;
-            currentSector++;
+                numSectorsInFrame++;
+                currentSector++;
+            }
         }
 
         if (currentSector >= numHorizSectors * numVertSectors)
@@ -238,7 +252,7 @@ public class ShadowDetection : MonoBehaviour
                 star1.color = (correctPercentage >= authorThreshold) ? authorColor : defaultColor;
                 star2.color = (correctPercentage >= authorThreshold) ? authorColor : defaultColor;
                 star3.color = (correctPercentage >= authorThreshold) ? authorColor : defaultColor;
-            }           
+            }
 
             currentSector = 0;
         }
