@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 
 public class LevelSelector : MonoBehaviour
 {
-    private const int nLevels = 4;
     private const float oneStarThreshold = 80;
     private const float twoStarThreshold = 90;
     private const float threeStarThreshold = 95;
@@ -17,13 +16,12 @@ public class LevelSelector : MonoBehaviour
 
     void Start()
     {
+        int nLevels = buttons.Length;
         float[] scores = new float[nLevels];
 
         for (int i = 0; i < nLevels; i++)
-            scores[i] = PlayerPrefs.GetFloat("ScoreLevel" + (i+1), 0);
-
-        for (int i = 0; i < nLevels; i++)
         {
+            scores[i] = PlayerPrefs.GetFloat("ScoreLevel" + (i + 1), 0);
             Button button = buttons[i];        
 
             if ((i != 0) && (scores[i - 1] < oneStarThreshold))
