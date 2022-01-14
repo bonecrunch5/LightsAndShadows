@@ -36,16 +36,17 @@ public class ShadowDetection : MonoBehaviour
     public Color debugColor = Color.green;
 
     private bool paused = false;
-    private int nLevels = 4;
+    private const int nLevels = 4;
     private Image star1;
     private Image star2;
     private Image star3;
-    private int oneStarThreshold = 80;
-    private int twoStarThreshold = 90;
-    private int threeStarThreshold = 95;
+    private const float oneStarThreshold = 80;
+    private const float twoStarThreshold = 90;
+    private const float threeStarThreshold = 95;
     public float authorThreshold = 100;
     private Color defaultColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
     private Color authorColor = new Color(1.0f, 0.5f, 0.0f, 1.0f);
+    private float correctPercentage = 0;
 
     void OnEnable()
     {
@@ -78,13 +79,13 @@ public class ShadowDetection : MonoBehaviour
         shadowHeightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
 
         nextLevelButton.onClick.AddListener(HandleNextLevel);
-        Image[] allChildren = nextLevelButton.GetComponentsInChildren<Image>();
+        Image[] stars = nextLevelButton.GetComponentsInChildren<Image>();
 
-        foreach (Image child in allChildren)
+        foreach (Image star in stars)
         {
-            if (child.gameObject.name == "Star1") star1 = child;
-            if (child.gameObject.name == "Star2") star2 = child;
-            if (child.gameObject.name == "Star3") star3 = child;
+            if (star.gameObject.name == "Star1") star1 = star;
+            else if (star.gameObject.name == "Star2") star2 = star;
+            else if (star.gameObject.name == "Star3") star3 = star;
         }
     }
 
@@ -220,7 +221,7 @@ public class ShadowDetection : MonoBehaviour
 
         if (currentSector >= numHorizSectors * numVertSectors)
         {
-            float correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
+            correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
 
             if (!paused)
             {
@@ -271,8 +272,11 @@ public class ShadowDetection : MonoBehaviour
 
     private void HandleNextLevel()
     {
-        int nextLevel = PlayerPrefs.GetInt("Level", 0) + 1;
-         
+        int currentLevel = PlayerPrefs.GetInt("Level", 0);
+        int nextLevel = currentLevel + 1;
+        PlayerPrefs.SetFloat("ScoreLevel" + currentLevel, correctPercentage);
+        PlayerPrefs.SetFloat("AuthorScoreLevel" + currentLevel, authorThreshold);
+
         if (nextLevel > nLevels)
             SceneManager.LoadScene("MainMenu");
         else
