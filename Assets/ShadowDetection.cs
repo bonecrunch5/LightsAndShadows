@@ -274,7 +274,11 @@ public class ShadowDetection : MonoBehaviour
     {
         int currentLevel = PlayerPrefs.GetInt("Level", 0);
         int nextLevel = currentLevel + 1;
-        PlayerPrefs.SetFloat("ScoreLevel" + currentLevel, correctPercentage);
+
+        float bestScore = PlayerPrefs.GetFloat("ScoreLevel" + currentLevel, 0);
+        if (correctPercentage > bestScore)
+            PlayerPrefs.SetFloat("ScoreLevel" + currentLevel, correctPercentage);
+
         PlayerPrefs.SetFloat("AuthorScoreLevel" + currentLevel, authorThreshold);
 
         if (nextLevel > nLevels)
