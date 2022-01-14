@@ -102,6 +102,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5273515336445462325}
+  - component: {fileID: 1957900865}
   m_Layer: 0
   m_Name: Flashlight
   m_TagString: Untagged
@@ -125,6 +126,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: -110.163}
+--- !u!114 &1957900865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6993808560238764804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7bbf231442ccfd4b8a58f34e171618b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spotlight: {fileID: 5571204653557990766}
+  generatedEnergy: 0.2
+  lightOnMaxSeconds: 45
+  lightOnMinSeconds: 30
+  shakeDetectionThreshold: 2.5
 --- !u!1 &7177506228878710799
 GameObject:
   m_ObjectHideFlags: 0
