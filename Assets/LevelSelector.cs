@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class LevelSelector : MonoBehaviour
 {
@@ -30,8 +31,19 @@ public class LevelSelector : MonoBehaviour
                 button.interactable = false;
             }
 
-            Image[] images;
-            images = button.GetComponentsInChildren<Image>();
+            Image[] images = button.GetComponentsInChildren<Image>();
+            TextMeshProUGUI[] scoreTexts = button.GetComponentsInChildren<TextMeshProUGUI>();
+            foreach (TextMeshProUGUI scoreText in scoreTexts)
+            {
+                if (scoreText.gameObject.name == "Score")
+                {
+                    scoreText.gameObject.SetActive(scores[i] > oneStarThreshold);
+                    scoreText.text = "Score: " + scores[i].ToString("F2") + "%";
+                }
+                
+            }
+                
+
             float authorScore = PlayerPrefs.GetFloat("AuthorScoreLevel" + (i + 1), 100);
 
             foreach (Image star in images)
