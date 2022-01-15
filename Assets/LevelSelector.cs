@@ -40,9 +40,7 @@ public class LevelSelector : MonoBehaviour
                     scoreText.gameObject.SetActive(scores[i] > oneStarThreshold);
                     scoreText.text = "Score: " + scores[i].ToString("F2") + "%";
                 }
-                
             }
-                
 
             float authorScore = PlayerPrefs.GetFloat("AuthorScoreLevel" + (i + 1), 100);
 
@@ -54,11 +52,10 @@ public class LevelSelector : MonoBehaviour
                     star.gameObject.SetActive(scores[i] > twoStarThreshold);
                 else if (star.gameObject.name == "Star3")
                     star.gameObject.SetActive(scores[i] > threeStarThreshold);
-                if ((star.gameObject.name == "Star1") || (star.gameObject.name == "Star2") || (star.gameObject.name == "Star3") && (scores[i] >= authorScore))
+                if (((star.gameObject.name == "Star1") || (star.gameObject.name == "Star2") || (star.gameObject.name == "Star3")) && (scores[i] >= authorScore))
                     star.color = authorColor;
             }
         }
-
     }
 
     public void PlayLevel(int level)
