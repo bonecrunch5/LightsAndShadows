@@ -90,6 +90,9 @@ public class ShadowDetection : MonoBehaviour
             else if (star.gameObject.name == "Star2") star2 = star;
             else if (star.gameObject.name == "Star3") star3 = star;
         }
+
+        int currentLevel = PlayerPrefs.GetInt("Level", 0);
+        PlayerPrefs.SetFloat("AuthorScoreLevel" + currentLevel, authorThreshold);
     }
 
     void Update()
@@ -287,14 +290,12 @@ public class ShadowDetection : MonoBehaviour
     private void HandleNextLevel()
     {
         int currentLevel = PlayerPrefs.GetInt("Level", 0);
-        int nextLevel = currentLevel + 1;
-
         float bestScore = PlayerPrefs.GetFloat("ScoreLevel" + currentLevel, 0);
+
         if (correctPercentage > bestScore)
             PlayerPrefs.SetFloat("ScoreLevel" + currentLevel, correctPercentage);
 
-        PlayerPrefs.SetFloat("AuthorScoreLevel" + currentLevel, authorThreshold);
-
+        int nextLevel = currentLevel + 1;
         if (nextLevel > nLevels)
             SceneManager.LoadScene("MainMenu");
         else
