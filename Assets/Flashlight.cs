@@ -3,6 +3,9 @@ using UnityEngine;
 public class Flashlight : MonoBehaviour
 {
     [SerializeField]
+    private Animator animator;
+
+    [SerializeField]
     private Light spotlight;
     private float defaultIntensity;
     [SerializeField]
@@ -52,7 +55,10 @@ public class Flashlight : MonoBehaviour
             Vector3 deltaAcceleration = acceleration - lowPassValue;
 
             if (deltaAcceleration.sqrMagnitude >= shakeDetectionThreshold)
+            {
+                animator.SetTrigger("Shake");
                 lightEnergy += generatedEnergy;
+            }
 
             ChangeLightIntensity(maxLightEnergy - lightEnergy);
 
