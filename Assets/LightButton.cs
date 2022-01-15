@@ -9,6 +9,9 @@ public class LightButton : MonoBehaviour
 
     public void MoveLight()
     {
+        if(!spotLight.activeSelf)
+            spotLight.SetActive(true);
+
         spotLight.transform.position = aRCamera.transform.position;
         spotLight.transform.rotation = aRCamera.transform.rotation;
     }
