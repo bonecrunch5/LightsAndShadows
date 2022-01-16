@@ -37,7 +37,7 @@ public class ShadowDetection : MonoBehaviour
     public Color debugColor = Color.green;
 
     private bool paused = false;
-    private const int nLevels = 4;
+    private const int nLevels = 6;
     private Image star1;
     private Image star2;
     private Image star3;
