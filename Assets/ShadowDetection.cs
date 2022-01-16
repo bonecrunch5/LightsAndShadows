@@ -127,7 +127,7 @@ public class ShadowDetection : MonoBehaviour
         shadowHeightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
 #endif
 
-        if (spotlight.intensity < defaultIntensity)
+        if (!spotlight.isActiveAndEnabled || spotlight.intensity < defaultIntensity)
         {
             // If spotlight is turning off, trigger end of verification immediately
             // And trigger percentage of value 0
