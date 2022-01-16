@@ -141,8 +141,8 @@ MonoBehaviour:
   animator: {fileID: 6210812468328557714}
   spotlight: {fileID: 5571204653557990766}
   generatedEnergy: 0.2
-  lightOnMaxSeconds: 45
-  lightOnMinSeconds: 30
+  lightOnMaxSeconds: 120
+  lightOnMinSeconds: 60
   shakeDetectionThreshold: 2.5
 --- !u!1 &7177506228878710799
 GameObject:
