@@ -17,7 +17,7 @@ public class TargetAnimation : MonoBehaviour
         {
             finalPosition.Add(t.localPosition);
             finalScale.Add(t.localScale);
-            animationOver.Add(false);
+            animationOver.Add(!t.gameObject.activeSelf);
         }
     }
 
