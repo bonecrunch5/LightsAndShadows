@@ -23,7 +23,7 @@ public class LevelSelector : MonoBehaviour
         for (int i = 0; i < nLevels; i++)
         {
             scores[i] = PlayerPrefs.GetFloat("ScoreLevel" + (i + 1), 0);
-            Button button = buttons[i];        
+            Button button = buttons[i];
 
             if ((i != 0) && (scores[i - 1] < oneStarThreshold))
             {

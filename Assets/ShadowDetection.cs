@@ -239,6 +239,7 @@ public class ShadowDetection : MonoBehaviour
         if (currentSector >= numHorizSectors * numVertSectors)
         {
             correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
+            correctPercentage = Mathf.Round(correctPercentage * 100f)/100f;
 
             if (!paused)
             {
