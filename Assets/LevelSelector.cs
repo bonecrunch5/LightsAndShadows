@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -7,6 +5,7 @@ using TMPro;
 
 public class LevelSelector : MonoBehaviour
 {
+    // Minimum score for each star
     private const float oneStarThreshold = 80;
     private const float twoStarThreshold = 90;
     private const float threeStarThreshold = 95;
@@ -25,6 +24,7 @@ public class LevelSelector : MonoBehaviour
             scores[i] = PlayerPrefs.GetFloat("ScoreLevel" + (i + 1), 0);
             Button button = buttons[i];
 
+            // Unlock level if previous one has been completed
             if ((i != 0) && (scores[i - 1] < oneStarThreshold))
             {
                 button.image.color = disabledColor;
@@ -44,6 +44,7 @@ public class LevelSelector : MonoBehaviour
 
             float authorScore = PlayerPrefs.GetFloat("AuthorScoreLevel" + (i + 1), 100);
 
+            // Show stars according to score
             foreach (Image star in images)
             {
                 if (star.gameObject.name == "Star1")

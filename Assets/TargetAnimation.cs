@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +9,6 @@ public class TargetAnimation : MonoBehaviour
     private float spottedTime;
     private bool spotted = false;
 
-    // Start is called before the first frame update
     void Start()
     {
         // Set final local positions and scales for children objects of target
@@ -22,7 +20,6 @@ public class TargetAnimation : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (spotted)

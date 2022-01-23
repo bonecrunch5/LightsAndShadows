@@ -1,16 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Diagnostics;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class ShadowDetection : MonoBehaviour
 {
+    // Image with color regions for detection:
+    //  - White: light
+    //  - Black: shadow
+    //  - Grey: whatever
     public Texture2D shadowMap;
 
     public Light spotlight;
+    // Default value of light intensity
     private float defaultIntensity;
 
     public TextMeshProUGUI percentageText;
@@ -21,20 +23,17 @@ public class ShadowDetection : MonoBehaviour
     private int numCorrectSectors = 0;
     private int numWrongSectors = 0;
 
+    // Current sector being verified
     private int currentSector = 0;
+    // Number of verified sectors per frame
     public int sectorsPerFrame = 10;
 
+    // Number of sectors on the wall
     public int numHorizSectors = 64;
     public int numVertSectors = 32;
 
     private int shadowWidthJump;
     private int shadowHeightJump;
-
-    public bool debugSectors = false;
-    public bool debugShadows = false;
-    public bool debugTextureShadows = false;
-    public bool debugTextureWhatever = false;
-    public Color debugColor = Color.green;
 
     private bool paused = false;
     private const int nLevels = 6;
@@ -49,6 +48,12 @@ public class ShadowDetection : MonoBehaviour
     private Color authorColor = new Color(1.0f, 0.5f, 0.0f, 1.0f);
     private float correctPercentage = 0;
 
+    public bool debugSectors = false;
+    public bool debugShadows = false;
+    public bool debugTextureShadows = false;
+    public bool debugTextureWhatever = false;
+    public Color debugColor = Color.green;
+
     void OnEnable()
     {
         sectorsPerFrame = PlayerPrefs.GetInt("sectorsPerFrame", 100);
@@ -60,6 +65,7 @@ public class ShadowDetection : MonoBehaviour
 
         defaultIntensity = spotlight.intensity;
 
+        // Number of horizontal and vertical secotrs must be power of 2
         if ((numHorizSectors == 0) || (numHorizSectors & (numHorizSectors - 1)) != 0)
         {
 #if UNITY_EDITOR
@@ -78,6 +84,7 @@ public class ShadowDetection : MonoBehaviour
 #endif
         }
 
+        // Calculate size of each sector
         shadowWidthJump = Mathf.FloorToInt(shadowMap.width / numHorizSectors);
         shadowHeightJump = Mathf.FloorToInt(shadowMap.height / numVertSectors);
 
@@ -105,6 +112,7 @@ public class ShadowDetection : MonoBehaviour
             Debug.LogError("Invalid numVertSectors; must be power of 2 (" + numVertSectors + " is not power of 2)");
 #endif
 
+        // Number of sectors verified in this frame
         int numSectorsInFrame = 0;
 
         Bounds bounds = meshFilter.mesh.bounds;
@@ -117,6 +125,7 @@ public class ShadowDetection : MonoBehaviour
         Vector3 planeBottomRight = new Vector3(planeCenter.x - planeExtents.x, planeCenter.y, planeCenter.z + planeExtents.z);  // Bottom right corner
         Vector3 planeBottomLeft = new Vector3(planeCenter.x + planeExtents.x, planeCenter.y, planeCenter.z + planeExtents.z);  // Bottom left corner
 
+        // Get corners of plane in world space
         planeTopRight = transform.TransformPoint(planeTopRight);
         planeTopLeft = transform.TransformPoint(planeTopLeft);
         planeBottomRight = transform.TransformPoint(planeBottomRight);
@@ -129,7 +138,7 @@ public class ShadowDetection : MonoBehaviour
 
         if (!spotlight.isActiveAndEnabled || spotlight.intensity < defaultIntensity)
         {
-            // If spotlight is turning off, trigger end of verification immediately
+            // If spotlight is turning/turned off, trigger end of verification immediately
             // And trigger percentage of value 0
             currentSector = numHorizSectors * numVertSectors;
             numWrongSectors = 1;
@@ -139,12 +148,15 @@ public class ShadowDetection : MonoBehaviour
         {
             if (currentSector == 0)
             {
+                // Reset correct and wrong sectors
                 numCorrectSectors = 0;
                 numWrongSectors = 0;
             }
 
+            // Go through each sector, verifying if it's correct
             while (numSectorsInFrame < sectorsPerFrame && currentSector < numHorizSectors * numVertSectors)
             {
+                // Get coordinates of center of sector
                 int indexVert = currentSector / numHorizSectors;
 
                 Vector3 leftPoint = Vector3.Lerp(planeTopLeft, planeBottomLeft, (indexVert + 0.5f) / numVertSectors);
@@ -161,8 +173,11 @@ public class ShadowDetection : MonoBehaviour
                 bool isShadow = true;
                 bool isInsideLightCone = true;
 
+                // If angle between sector and spotlight is higher than the spotlight angle, consider it in shadow
                 if (angle <= spotlight.spotAngle / 2)
                 {
+                    // Shoot raycast from center of sector into spotlight
+                    // If raycast hits anything (an object is in the way) then it is in shadow
                     bool hit = Physics.Raycast(sectorCenter, direction, direction.magnitude, LayerMask.GetMask("Default"));
 
                     if (hit)
@@ -184,6 +199,7 @@ public class ShadowDetection : MonoBehaviour
 #endif
                 }
 
+                // Get section of pixels in shadow map
                 Color[] shadowMapPixels = shadowMap.GetPixels(indexHoriz * shadowWidthJump, (numVertSectors - indexVert - 1) * shadowHeightJump, shadowWidthJump, shadowHeightJump, 0);
 
                 int numShadowPixels = 0;
@@ -221,12 +237,14 @@ public class ShadowDetection : MonoBehaviour
                     {
                         numCorrectSectors++;
 
+                        // Give more weight to shadow region
                         if (shouldBeShadow) numCorrectSectors += 4;
                     }
                     else
                     {
                         numWrongSectors++;
 
+                        // Give more weight to shadow region
                         if (shouldBeShadow) numWrongSectors += 4;
                     }
                 }
@@ -236,10 +254,11 @@ public class ShadowDetection : MonoBehaviour
             }
         }
 
+        // When all sectors have been verified, calculate current score
         if (currentSector >= numHorizSectors * numVertSectors)
         {
             correctPercentage = ((float)numCorrectSectors / (float)(numCorrectSectors + numWrongSectors)) * 100;
-            correctPercentage = Mathf.Round(correctPercentage * 100f)/100f;
+            correctPercentage = Mathf.Round(correctPercentage * 100f) / 100f;
 
             if (!paused)
             {
