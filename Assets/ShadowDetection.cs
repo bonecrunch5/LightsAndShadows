@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Diagnostics;
 
 public class ShadowDetection : MonoBehaviour
 {
