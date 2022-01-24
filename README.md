@@ -4,7 +4,7 @@
 
 **Lights & Shadows** is an AR puzzle game made in Unity for Android devices that challenges players with simple yet demanding levels.
 
-## Development Environment
+## Requirements
 
 This source code requires Unity version 2020.3.24f1 and Git LFS installed.
 
