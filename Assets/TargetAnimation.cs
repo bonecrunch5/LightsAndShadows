@@ -12,11 +12,11 @@ public class TargetAnimation : MonoBehaviour
     void Start()
     {
         // Set final local positions and scales for children objects of target
-        foreach(Transform t in transform)
+        foreach (Transform t in transform)
         {
             finalPosition.Add(t.localPosition);
             finalScale.Add(t.localScale);
-            animationOver.Add(!t.gameObject.activeSelf);
+            animationOver.Add(t.gameObject.name == "Flashlight");
         }
     }
 
@@ -24,10 +24,10 @@ public class TargetAnimation : MonoBehaviour
     {
         if (spotted)
         {
-            for(int i = 0; i < transform.childCount; i++)
+            for (int i = 0; i < transform.childCount; i++)
             {
                 if (animationOver[i]) continue;
-                if ((spottedTime + i*0.5) > Time.time) return;
+                if ((spottedTime + i * 0.5) > Time.time) return;
 
                 Transform childTransform = transform.GetChild(i);
                 // Snaps position and scale of objects to final values if the difference is too low, to avoid unnecessary processing
@@ -52,9 +52,13 @@ public class TargetAnimation : MonoBehaviour
             spotted = true;
             spottedTime = Time.time;
             // Set initial positions and scales of objects
-            for(int i = 0; i < transform.childCount; i++)
+            for (int i = 0; i < transform.childCount; i++)
             {
                 Transform childTransform = transform.GetChild(i);
+
+                if (childTransform.gameObject.name == "Flashlight")
+                    continue;
+
                 childTransform.localPosition = Vector3.zero;
                 childTransform.localScale = Vector3.zero;
             }
