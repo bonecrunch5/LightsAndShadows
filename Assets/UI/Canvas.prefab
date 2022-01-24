@@ -1564,7 +1564,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3831f14358218934299da013a73e174d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lighButton: {fileID: 588599550305186217}
+  lightButton: {fileID: 588599550305186217}
 --- !u!1 &588599551788722852
 GameObject:
   m_ObjectHideFlags: 0
