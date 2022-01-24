@@ -15,6 +15,6 @@ public class MainMenu : MonoBehaviour
 
     public void DownloadMarkers()
     {
-        Application.OpenURL("https://drive.google.com/u/0/uc?id=15m1sxEOkyHWmFKft9vi6fAcXZ7Gg7u9E&export=download");
+        Application.OpenURL("https://github.com/bonecrunch5/LightsAndShadows/raw/main/markersPrint.pdf");
     }
 }
